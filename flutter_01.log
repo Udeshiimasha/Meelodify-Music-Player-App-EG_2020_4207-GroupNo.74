@@ -1,0 +1,90 @@
+Flutter crash report.
+Please report a bug at https://github.com/flutter/flutter/issues.
+
+## command
+
+flutter debug_adapter
+
+## exception
+
+SocketException: SocketException: Write failed (OS Error: The pipe is being closed.
+, errno = 232), port = 0
+
+```
+#0      _NativeSocket.write (dart:io-patch/socket_patch.dart:1246:34)
+#1      _RawSocket.write (dart:io-patch/socket_patch.dart:2004:15)
+#2      _Socket._write (dart:io-patch/socket_patch.dart:2479:18)
+#3      _SocketStreamConsumer.write (dart:io-patch/socket_patch.dart:2214:28)
+#4      _SocketStreamConsumer.addStream.<anonymous closure> (dart:io-patch/socket_patch.dart:2168:11)
+#5      _rootRunUnary (dart:async/zone.dart:1407:47)
+#6      _CustomZone.runUnary (dart:async/zone.dart:1308:19)
+#7      _CustomZone.runUnaryGuarded (dart:async/zone.dart:1217:7)
+#8      _BufferingStreamSubscription._sendData (dart:async/stream_impl.dart:339:11)
+#9      _DelayedData.perform (dart:async/stream_impl.dart:515:14)
+#10     _PendingEvents.handleNext (dart:async/stream_impl.dart:620:11)
+#11     _PendingEvents.schedule.<anonymous closure> (dart:async/stream_impl.dart:591:7)
+#12     _rootRun (dart:async/zone.dart:1391:47)
+#13     _CustomZone.run (dart:async/zone.dart:1301:19)
+#14     _CustomZone.runGuarded (dart:async/zone.dart:1209:7)
+#15     _CustomZone.bindCallbackGuarded.<anonymous closure> (dart:async/zone.dart:1249:23)
+#16     _rootRun (dart:async/zone.dart:1399:13)
+#17     _CustomZone.run (dart:async/zone.dart:1301:19)
+#18     _CustomZone.runGuarded (dart:async/zone.dart:1209:7)
+#19     _CustomZone.bindCallbackGuarded.<anonymous closure> (dart:async/zone.dart:1249:23)
+#20     _microtaskLoop (dart:async/schedule_microtask.dart:40:21)
+#21     _startMicrotaskLoop (dart:async/schedule_microtask.dart:49:5)
+#22     _runPendingImmediateCallback (dart:isolate-patch/isolate_patch.dart:118:13)
+#23     _RawReceivePort._handleMessage (dart:isolate-patch/isolate_patch.dart:185:5)
+```
+
+## flutter doctor
+
+```
+[✓] Flutter (Channel stable, 3.16.5, on Microsoft Windows [Version 10.0.22621.3007], locale en-US)
+    • Flutter version 3.16.5 on channel stable at C:\FlutterDev\flutter
+    • Upstream repository https://github.com/flutter/flutter.git
+    • Framework revision 78666c8dc5 (4 weeks ago), 2023-12-19 16:14:14 -0800
+    • Engine revision 3f3e560236
+    • Dart version 3.2.3
+    • DevTools version 2.28.4
+
+[✓] Windows Version (Installed version of Windows is version 10 or higher)
+
+[✓] Android toolchain - develop for Android devices (Android SDK version 34.0.0)
+    • Android SDK at C:\Users\User\AppData\Local\Android\sdk
+    • Platform android-34, build-tools 34.0.0
+    • Java binary at: C:\Program Files\Android\Android Studio\jbr\bin\java
+    • Java version OpenJDK Runtime Environment (build 17.0.6+0-b2043.56-10027231)
+    • All Android licenses accepted.
+
+[✓] Chrome - develop for the web
+    • Chrome at C:\Program Files\Google\Chrome\Application\chrome.exe
+
+[✓] Visual Studio - develop Windows apps (Visual Studio Community 2022 17.7.6)
+    • Visual Studio at C:\Program Files\Microsoft Visual Studio\2022\Community
+    • Visual Studio Community 2022 version 17.7.34221.43
+    • Windows 10 SDK version 10.0.22621.0
+
+[✓] Android Studio (version 2022.3)
+    • Android Studio at C:\Program Files\Android\Android Studio
+    • Flutter plugin can be installed from:
+      🔨 https://plugins.jetbrains.com/plugin/9212-flutter
+    • Dart plugin can be installed from:
+      🔨 https://plugins.jetbrains.com/plugin/6351-dart
+    • Java version OpenJDK Runtime Environment (build 17.0.6+0-b2043.56-10027231)
+
+[✓] VS Code (version 1.81.1)
+    • VS Code at C:\Users\User\AppData\Local\Programs\Microsoft VS Code
+    • Flutter extension version 3.80.0
+
+[✓] Connected device (4 available)
+    • SM M215F (mobile) • R58NA4QHXLZ • android-arm64  • Android 12 (API 31)
+    • Windows (desktop) • windows     • windows-x64    • Microsoft Windows [Version 10.0.22621.3007]
+    • Chrome (web)      • chrome      • web-javascript • Google Chrome 120.0.6099.217
+    • Edge (web)        • edge        • web-javascript • Microsoft Edge 120.0.2210.133
+
+[✓] Network resources
+    • All expected network resources are available.
+
+• No issues found!
+```
