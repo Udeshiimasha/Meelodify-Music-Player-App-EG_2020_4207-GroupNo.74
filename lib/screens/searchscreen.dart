@@ -3,6 +3,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:melodify/controllers/player_contoller.dart';
 import 'package:melodify/screens/home.dart';
+import 'package:melodify/screens/favourites.dart';
+import 'package:melodify/screens/category.dart';
 import 'package:melodify/screens/player.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
@@ -16,36 +18,86 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   TextEditingController title = TextEditingController();
   final PlayerController playerController = Get.find();
-  String search = '';
+  List<SongModel> allSongs = [];
+  List<SongModel> filteredSongs = [];
 
-  // void _runFilter(String enteredKeyword) {
-  //   List<Map<String, dynamic>> results = [];
-  //   if (enteredKeyword.isEmpty) {
-  //     //results = AudioQuery.querySongs.snapshot.data;
-  //   }
-  // }
+  int _selectedIndex = 2;
+
+  static const List<Widget> _widgetOptions = <Widget>[
+    HomePage(),
+    Favourites(),
+    SearchScreen(),
+    Category(),
+    Placeholder(), // Replace with your profile screen if you have one
+  ];
+
+  void _onItemTapped(int index) {
+    if (index != _selectedIndex) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => _widgetOptions[index]),
+      );
+    }
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSongs();
+    title.addListener(_filterSongs);
+  }
+
+  @override
+  void dispose() {
+    title.removeListener(_filterSongs);
+    title.dispose();
+    super.dispose();
+  }
+
+  void _loadSongs() async {
+    List<SongModel> songs = await playerController.audioQuery.querySongs(
+      ignoreCase: true,
+      orderType: OrderType.ASC_OR_SMALLER,
+      sortType: null,
+      uriType: UriType.EXTERNAL,
+    );
+
+    setState(() {
+      allSongs = songs;
+      filteredSongs = songs;
+    });
+  }
+
+  void _filterSongs() {
+    setState(() {
+      filteredSongs = allSongs
+          .where((song) =>
+              song.displayNameWOExt
+                  .toLowerCase()
+                  .contains(title.text.toLowerCase()) ||
+              (song.artist != null &&
+                  song.artist!
+                      .toLowerCase()
+                      .contains(title.text.toLowerCase())))
+          .toList();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    var controller = Get.put(PlayerController());
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text(
           'Search',
           style: TextStyle(
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.bold,
               decorationColor: Color.fromARGB(19, 39, 1, 46),
-              fontSize: 24),
+              fontSize: 25),
         ),
-        // actions: [
-        //   IconButton(
-        //     icon: const Icon(
-        //       Icons.queue_music_sharp,
-        //       color: Colors.black,
-        //     ),
-        //     onPressed: () {},
-        //   ),
-        // ],
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -80,70 +132,51 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                   onPressed: () {
                     title.text = '';
+                    _filterSongs();
                   },
                 ),
                 filled: true,
                 fillColor: const Color.fromARGB(223, 225, 113, 164),
                 hintText: 'Search for songs....',
-                //border: const OutlineInputBorder(
-                //borderRadius: BorderRadius.circular(20),
-                //borderSide: const BorderSide(color: Colors.black)),
                 hintStyle: const TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Color.fromARGB(19, 0, 0, 0),
                     fontSize: 20),
               ),
-              // onChanged: (String? value) {
-              //   print(value);
-
-              //   // setState(() {
-              //   //   search = value.toString();
-              //   // });
-              // },
             ),
             Expanded(
-              child: FutureBuilder<List<SongModel>>(
-                future: controller.audioQuery.querySongs(
-                    ignoreCase: true,
-                    orderType: OrderType.ASC_OR_SMALLER,
-                    sortType: null,
-                    uriType: UriType.EXTERNAL),
-                builder: (BuildContext contex, snapshot) {
-                  if (snapshot.data == null) {
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  } else if (snapshot.data!.isEmpty) {
-                    return const Center(
+              child: filteredSongs.isEmpty
+                  ? const Center(
                       child: Text("No Song Found", style: TextStyle()),
-                    );
-                  } else {
-                    return Stack(fit: StackFit.expand, children: [
-                      Image.asset(
-                        "assets/images/body_pic.jpg",
-                        fit: BoxFit.cover,
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              const Color.fromARGB(255, 255, 131, 187)
-                                  .withOpacity(0.8),
-                              const Color.fromARGB(255, 234, 187, 209)
-                                  .withOpacity(0.8)
-                            ],
-                          ),
+                    )
+                  : Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        Image.asset(
+                          "assets/images/body_pic.jpg",
+                          fit: BoxFit.cover,
                         ),
-                        height: double.infinity,
-                        width: double.infinity,
-                        child: Scaffold(
-                          backgroundColor: Colors.transparent,
-                          body: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: ListView.builder(
-                                itemCount: snapshot.data?.length,
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                const Color.fromARGB(255, 255, 131, 187)
+                                    .withOpacity(0.8),
+                                const Color.fromARGB(255, 234, 187, 209)
+                                    .withOpacity(0.8)
+                              ],
+                            ),
+                          ),
+                          height: double.infinity,
+                          width: double.infinity,
+                          child: Scaffold(
+                            backgroundColor: Colors.transparent,
+                            body: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: ListView.builder(
+                                itemCount: filteredSongs.length,
                                 itemBuilder: (BuildContext context, int index) {
                                   return Container(
                                     margin: const EdgeInsets.only(bottom: 4),
@@ -155,8 +188,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                         tileColor: const Color.fromARGB(
                                             19, 50, 30, 47),
                                         title: Text(
-                                          snapshot
-                                              .data![index].displayNameWOExt,
+                                          filteredSongs[index].displayNameWOExt,
                                           style: const TextStyle(
                                             color: Colors.black,
                                             fontSize: 16,
@@ -164,7 +196,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                           ),
                                         ),
                                         subtitle: Text(
-                                          "${snapshot.data![index].artist}",
+                                          "${filteredSongs[index].artist}",
                                           style: TextStyle(
                                             color:
                                                 Colors.black.withOpacity(0.7),
@@ -172,38 +204,38 @@ class _SearchScreenState extends State<SearchScreen> {
                                           ),
                                         ),
                                         leading: QueryArtworkWidget(
-                                          id: snapshot.data![index].id,
+                                          id: filteredSongs[index].id,
                                           type: ArtworkType.AUDIO,
                                           nullArtworkWidget: const FaIcon(
                                               FontAwesomeIcons.music),
                                         ),
-                                        trailing: controller.playIndex.value ==
+                                        trailing: playerController
+                                                        .playIndex.value ==
                                                     index &&
-                                                controller.isPlaying.value
+                                                playerController.isPlaying.value
                                             ? const Icon(Icons.play_arrow,
                                                 color: Colors.black, size: 28)
                                             : null,
                                         onTap: () {
                                           Get.to(
                                             () => Player(
-                                              data: snapshot.data!,
+                                              data: filteredSongs,
                                             ),
                                             transition: Transition.downToUp,
                                           );
-                                          controller.playSong(
-                                              snapshot.data![index].uri, index);
+                                          playerController.playSong(
+                                              filteredSongs[index].uri, index);
                                         },
                                       ),
                                     ),
                                   );
-                                }),
+                                },
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ]);
-                  }
-                },
-              ),
+                      ],
+                    ),
             ),
           ],
         ),
@@ -226,42 +258,49 @@ class _SearchScreenState extends State<SearchScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               IconButton(
-                icon: const Icon(
+                icon: Icon(
                   Icons.home,
-                  color: Colors.black,
+                  color: _selectedIndex == 0
+                      ? const Color.fromARGB(255, 255, 0, 204)
+                      : Colors.black,
                 ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const HomePage()),
-                  );
-                },
+                onPressed: () => _onItemTapped(0),
               ),
               IconButton(
-                icon: const Icon(
+                icon: Icon(
                   Icons.favorite,
-                  color: Colors.black,
+                  color: _selectedIndex == 1
+                      ? const Color.fromARGB(255, 255, 0, 204)
+                      : Colors.black,
                 ),
-                onPressed: () {
-                  // Navigator.push(
-                  //   context,
-                  //   MaterialPageRoute(builder: (context) => const Favourites()),
-                  // );
-                },
+                onPressed: () => _onItemTapped(1),
               ),
               IconButton(
-                icon: const Icon(
-                  Icons.notifications,
-                  color: Colors.black,
+                icon: Icon(
+                  Icons.search_rounded,
+                  color: _selectedIndex == 2
+                      ? const Color.fromARGB(255, 255, 0, 204)
+                      : Colors.black,
                 ),
-                onPressed: () {},
+                onPressed: () => _onItemTapped(2),
               ),
               IconButton(
-                icon: const Icon(
+                icon: Icon(
+                  Icons.category,
+                  color: _selectedIndex == 3
+                      ? const Color.fromARGB(255, 255, 0, 204)
+                      : Colors.black,
+                ),
+                onPressed: () => _onItemTapped(3),
+              ),
+              IconButton(
+                icon: Icon(
                   Icons.person,
-                  color: Colors.black,
+                  color: _selectedIndex == 4
+                      ? const Color.fromARGB(255, 255, 0, 204)
+                      : Colors.black,
                 ),
-                onPressed: () {},
+                onPressed: () => _onItemTapped(4),
               ),
             ],
           ),
