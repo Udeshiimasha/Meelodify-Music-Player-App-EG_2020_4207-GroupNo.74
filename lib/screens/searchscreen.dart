@@ -20,6 +20,7 @@ class _SearchScreenState extends State<SearchScreen> {
   final PlayerController playerController = Get.find();
   List<SongModel> allSongs = [];
   List<SongModel> filteredSongs = [];
+  List<String> searchHistory = [];
 
   int _selectedIndex = 2;
 
@@ -73,17 +74,32 @@ class _SearchScreenState extends State<SearchScreen> {
 
   void _filterSongs() {
     setState(() {
-      filteredSongs = allSongs
-          .where((song) =>
-              song.displayNameWOExt
-                  .toLowerCase()
-                  .contains(title.text.toLowerCase()) ||
-              (song.artist != null &&
-                  song.artist!
-                      .toLowerCase()
-                      .contains(title.text.toLowerCase())))
-          .toList();
+      if (title.text.isEmpty) {
+        filteredSongs = [];
+      } else {
+        filteredSongs = allSongs
+            .where((song) =>
+                song.displayNameWOExt
+                    .toLowerCase()
+                    .contains(title.text.toLowerCase()) ||
+                (song.artist != null &&
+                    song.artist!
+                        .toLowerCase()
+                        .contains(title.text.toLowerCase())))
+            .toList();
+      }
     });
+  }
+
+  void _addToSearchHistory(String query) {
+    if (query.isNotEmpty && !searchHistory.contains(query)) {
+      setState(() {
+        searchHistory.insert(0, query);
+        if (searchHistory.length > 10) {
+          searchHistory.removeLast();
+        }
+      });
+    }
   }
 
   @override
@@ -137,105 +153,21 @@ class _SearchScreenState extends State<SearchScreen> {
                 ),
                 filled: true,
                 fillColor: const Color.fromARGB(223, 225, 113, 164),
-                hintText: 'Search for songs....',
+                hintText: 'Search....',
                 hintStyle: const TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Color.fromARGB(19, 0, 0, 0),
                     fontSize: 20),
               ),
+              onFieldSubmitted: (query) {
+                _addToSearchHistory(query);
+                _filterSongs();
+              },
             ),
             Expanded(
-              child: filteredSongs.isEmpty
-                  ? const Center(
-                      child: Text("No Song Found", style: TextStyle()),
-                    )
-                  : Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        Image.asset(
-                          "assets/images/body_pic.jpg",
-                          fit: BoxFit.cover,
-                        ),
-                        Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                const Color.fromARGB(255, 255, 131, 187)
-                                    .withOpacity(0.8),
-                                const Color.fromARGB(255, 234, 187, 209)
-                                    .withOpacity(0.8)
-                              ],
-                            ),
-                          ),
-                          height: double.infinity,
-                          width: double.infinity,
-                          child: Scaffold(
-                            backgroundColor: Colors.transparent,
-                            body: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: ListView.builder(
-                                itemCount: filteredSongs.length,
-                                itemBuilder: (BuildContext context, int index) {
-                                  return Container(
-                                    margin: const EdgeInsets.only(bottom: 4),
-                                    child: Obx(
-                                      () => ListTile(
-                                        shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(12)),
-                                        tileColor: const Color.fromARGB(
-                                            19, 50, 30, 47),
-                                        title: Text(
-                                          filteredSongs[index].displayNameWOExt,
-                                          style: const TextStyle(
-                                            color: Colors.black,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                        subtitle: Text(
-                                          "${filteredSongs[index].artist}",
-                                          style: TextStyle(
-                                            color:
-                                                Colors.black.withOpacity(0.7),
-                                            fontSize: 14.0,
-                                          ),
-                                        ),
-                                        leading: QueryArtworkWidget(
-                                          id: filteredSongs[index].id,
-                                          type: ArtworkType.AUDIO,
-                                          nullArtworkWidget: const FaIcon(
-                                              FontAwesomeIcons.music),
-                                        ),
-                                        trailing: playerController
-                                                        .playIndex.value ==
-                                                    index &&
-                                                playerController.isPlaying.value
-                                            ? const Icon(Icons.play_arrow,
-                                                color: Colors.black, size: 28)
-                                            : null,
-                                        onTap: () {
-                                          Get.to(
-                                            () => Player(
-                                              data: filteredSongs,
-                                            ),
-                                            transition: Transition.downToUp,
-                                          );
-                                          playerController.playSong(
-                                              filteredSongs[index].uri, index);
-                                        },
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+              child: title.text.isEmpty
+                  ? _buildSearchHistory()
+                  : _buildFilteredSongs(),
             ),
           ],
         ),
@@ -307,5 +239,151 @@ class _SearchScreenState extends State<SearchScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildSearchHistory() {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Image.asset(
+          "assets/images/body_pic.jpg",
+          fit: BoxFit.cover,
+        ),
+        Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                const Color.fromARGB(255, 255, 131, 187).withOpacity(0.8),
+                const Color.fromARGB(255, 234, 187, 209).withOpacity(0.8)
+              ],
+            ),
+          ),
+          height: double.infinity,
+          width: double.infinity,
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
+            body: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ListView.builder(
+                itemCount: searchHistory.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 4),
+                    child: ListTile(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      tileColor: const Color.fromARGB(19, 50, 30, 47),
+                      title: Text(
+                        searchHistory[index],
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      leading: const FaIcon(FontAwesomeIcons.history),
+                      onTap: () {
+                        title.text = searchHistory[index];
+                        _filterSongs();
+                      },
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFilteredSongs() {
+    return filteredSongs.isEmpty
+        ? const Center(
+            child: Text("No Song Found", style: TextStyle()),
+          )
+        : Stack(
+            fit: StackFit.expand,
+            children: [
+              Image.asset(
+                "assets/images/body_pic.jpg",
+                fit: BoxFit.cover,
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      const Color.fromARGB(255, 255, 131, 187).withOpacity(0.8),
+                      const Color.fromARGB(255, 234, 187, 209).withOpacity(0.8)
+                    ],
+                  ),
+                ),
+                height: double.infinity,
+                width: double.infinity,
+                child: Scaffold(
+                  backgroundColor: Colors.transparent,
+                  body: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ListView.builder(
+                      itemCount: filteredSongs.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 4),
+                          child: Obx(
+                            () => ListTile(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                              tileColor: const Color.fromARGB(19, 50, 30, 47),
+                              title: Text(
+                                filteredSongs[index].displayNameWOExt,
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              subtitle: Text(
+                                "${filteredSongs[index].artist}",
+                                style: TextStyle(
+                                  color: Colors.black.withOpacity(0.7),
+                                  fontSize: 14.0,
+                                ),
+                              ),
+                              leading: QueryArtworkWidget(
+                                id: filteredSongs[index].id,
+                                type: ArtworkType.AUDIO,
+                                nullArtworkWidget:
+                                    const FaIcon(FontAwesomeIcons.music),
+                              ),
+                              trailing:
+                                  playerController.playIndex.value == index &&
+                                          playerController.isPlaying.value
+                                      ? const Icon(Icons.play_arrow,
+                                          color: Colors.black, size: 28)
+                                      : null,
+                              onTap: () {
+                                Get.to(
+                                  () => Player(
+                                    data: filteredSongs,
+                                  ),
+                                  transition: Transition.downToUp,
+                                );
+                                playerController.playSong(
+                                    filteredSongs[index].uri, index);
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
   }
 }
