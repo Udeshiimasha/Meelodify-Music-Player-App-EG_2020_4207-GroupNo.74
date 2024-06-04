@@ -6,6 +6,7 @@ import 'package:melodify/screens/home.dart';
 import 'package:melodify/screens/favourites.dart';
 import 'package:melodify/screens/category.dart';
 import 'package:melodify/screens/player.dart';
+import 'package:melodify/screens/profile.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -29,7 +30,7 @@ class _SearchScreenState extends State<SearchScreen> {
     Favourites(),
     SearchScreen(),
     Category(),
-    Placeholder(), // Replace with your profile screen if you have one
+    Profile(),
   ];
 
   void _onItemTapped(int index) {
@@ -133,31 +134,34 @@ class _SearchScreenState extends State<SearchScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             TextFormField(
-              cursorColor: Colors.pink,
+              cursorColor: const Color.fromARGB(255, 239, 0, 163),
               keyboardType: TextInputType.text,
               controller: title,
               decoration: InputDecoration(
                 prefixIcon: const Icon(
                   Icons.search,
-                  color: Color.fromARGB(255, 207, 4, 163),
+                  color: Color.fromARGB(255, 223, 0, 104),
                 ),
-                suffixIcon: IconButton(
-                  icon: const Icon(
-                    Icons.close,
-                    color: Color.fromARGB(255, 207, 4, 163),
-                  ),
-                  onPressed: () {
-                    title.text = '';
-                    _filterSongs();
-                  },
-                ),
-                filled: true,
-                fillColor: const Color.fromARGB(223, 225, 113, 164),
+                suffixIcon: title.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(
+                          Icons.close,
+                          color: Color.fromARGB(255, 207, 4, 163),
+                        ),
+                        onPressed: () {
+                          title.text = '';
+                          _filterSongs();
+                        },
+                      )
+                    : null,
                 hintText: 'Search....',
                 hintStyle: const TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Color.fromARGB(19, 0, 0, 0),
                     fontSize: 20),
+                border: InputBorder.none,
+                filled: true,
+                fillColor: const Color.fromARGB(223, 245, 107, 188),
               ),
               onFieldSubmitted: (query) {
                 _addToSearchHistory(query);
@@ -283,7 +287,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      leading: const FaIcon(FontAwesomeIcons.history),
+                      leading: const Icon(Icons.history),
                       onTap: () {
                         title.text = searchHistory[index];
                         _filterSongs();
