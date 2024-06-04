@@ -37,9 +37,9 @@ dependencies:
   cupertino_icons: ^1.0.6
   font_awesome_flutter: ^10.6.0
   
-  firebase_core: ^2.24.2  
+  firebase_core: ^2.27.0  
   cloud_firestore: ^4.13.6 
-  firebase_auth: ^4.15.3
+  firebase_auth: ^4.17.8
   get: ^4.6.6
   permission_handler: ^11.1.0
   audio_query: ^0.0.2
@@ -50,6 +50,8 @@ dependencies:
   just_audio_background: ^0.0.1-beta.11
   firebase_storage: ^11.6.0
   fluttertoast: ^8.2.4
+  image_picker: ^1.0.8
+  shared_preferences: ^2.2.3
   # audio_service: ^0.18.12
   # assets_audio_player: ^3.1.1
   # flutter_background_service: ^5.0.5
